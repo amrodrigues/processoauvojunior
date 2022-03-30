@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+
+<html ng-app="appConsulta" >
+<head>
+    <meta charset="utf-8" />
+
+    <title></title>
+
+    <link href="../Content/bootstrap.min.css" rel="stylesheet" />
+
+    <script src="../Scripts/jquery-3.0.0.min.js"></script>
+    <script src="../Scripts/bootstrap.min.js"></script>
+
+    <script src="../Scripts/angular.min.js"></script>
+
+    <script>
+        
+        
+        var app = angular.module('appConsulta', []);
+        app.controller('consultaController',
+            function ($scope, $http) {
+
+             
+
+                //função para executar o serviço de consulta da API.. trazer todas as cidades
+                $scope.consultarcidade = function () {
+                   
+                    $http.get("http://localhost:55383/api/cidade/consultar")
+                        .then(function (obj) {
+                         
+                            $scope.consultarcidade = obj.data;
+
+                        })
+                        .error(function (e) {
+                            $scope.mensagem = e.data.Mensagem; //mensagem de erro..
+                        });
+                };
+
+                //função para executar o serviço de consulta da API.. trazzer a previsao do clima
+                $scope.previsaoclima = function () {
+
+                    $http.get("http://localhost:55383/api/previsaoclima/consultar")
+                        .then(function (obj) {
+
+                            $scope.previsaoclima = obj.data;
+                        })
+                        .error(function (e) {
+                            $scope.mensagem = e.data.Mensagem; //mensagem de erro..
+                        });
+                };
+
+
+            });
+
+
+    </script>
+
+</head>
+<body class="container" ng-controller="consultaController" ng-init="consultarcidade()">
+
+    <h2>Clima Tempo</h2>
+    <a href="/index.html">Página inicial</a>
+    <hr />
+
+
+    <table class="table table-bordered" ng-init="previsaoclima()">
+
+        <tr ng-repeat=" pca in previsaoclima  | orderBy : '-TemperaturaMaxima' | limitTo:3">
+            <td>Cidades mais quentes hoje</td>
+            <td ng-repeat=" c in consultarcidade  |filter : {'IdCidade' : pca.IdCidade}"> {{c.Nome}}</td>
+            <td>{{pca.Clima}}</td>
+            <td>{{pca.TemperaturaMaxima}}</td>
+        </tr>
+        <tr>
+            <td>
+                <br />
+                <br />
+
+        </tr>
+        <tr ng-repeat="pca in previsaoclima  | orderBy :'TemperaturaMinima'  | limitTo:3">
+            <td>Cidades mais frias hoje</td>
+            <td ng-repeat=" c in consultarcidade  |filter : {'IdCidade' : pca.IdCidade}"> {{c.Nome}}</td>
+            <td>{{pca.Clima}}</td>
+            <td>{{pca.TemperaturaMinima}}</td>
+        </tr>
+
+    </table>
+
+
+    <br />
+
+
+
+    <div class="col-md-4">
+        <label>Cidade:</label>
+        <select name="IdCidade" class="form-control" ng-model="filtropesquisa">
+            <option value="" selected> Selecione uma opção</option>
+            <option ng-repeat="c in consultarcidade | orderBy : 'Nome'  " value="{{c.IdCidade}}">{{c.Nome}}</option>
+
+        </select>
+        <br />
+        <br />
+    </div>
+    <div class="check-element animate-show-hide" ng-show="filtropesquisa">
+
+        <table class="table table-bordered" ng-init="previsaoclima()">
+
+            <tr class="disable" ng-repeat="c in consultarcidade  |filter : {'IdCidade' : filtropesquisa}">
+                <td colspan="5">
+                    Clima para os próximos setes dias na cidade de  {{(c.Nome) }}
+
+                </td>
+
+            </tr>
+
+            <tr>
+                <td>Dia</td>
+                <td>Clima</td>
+                <td>Temperatura Minima</td>
+                <td>Temperatura Máxima</td>
+            </tr>
+            <tbody>
+
+                <tr class="disable" ng-repeat="pc in previsaoclima   |filter : {'IdCidade' : filtropesquisa} | orderBy : 'DataPrevisao' | limitTo:7">
+                    <td>{{pc.DataPrevisao | date : 'EEEE' :' ' :'pt-BR'}}</td>
+                    <td>{{pc.Clima}}</td>
+                    <td>{{pc.TemperaturaMinima}}</td>
+                    <td>{{pc.TemperaturaMaxima}}</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+    </div>
+
+</body>
+</html>
